@@ -20,9 +20,9 @@ public class AuthMqServiceImpl implements AuthMqService {
     // establish RabbitMQ connection and broadcast message to one of the queues 
 
     private RabbitTemplate rabbitTemplate;
-    private final static String AUTH_EXCHANGE = "authExchange";
-    private final static String LOGIN_QUEUE = "loginQueue";
-    private final static String SIGN_UP_QUEUE = "signUpQueue";
+    private final static String AUTH_EXCHANGE = "auth_exchange";
+    private final static String LOGIN_QUEUE = "rabbitmq.auth.login.queue";
+    private final static String SIGN_UP_QUEUE = "rabbitmq.auth.signup.queue";
     private ObjectMapper jsonMapper;
     private final MqResponseRepository mqResponseRepository;
 

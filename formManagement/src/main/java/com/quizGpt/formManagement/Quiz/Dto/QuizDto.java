@@ -8,15 +8,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+// AKA gptResponseDto
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 public class QuizDto {
-    @JsonProperty("conversationId")
-    private String id;
+    @JsonProperty("id")
+    private Long id;
     @JsonProperty("number")
-    int number;
+    private Long number;
     @JsonProperty("results")
     private List<QAPairDto> results;
 }

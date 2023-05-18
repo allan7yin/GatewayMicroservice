@@ -25,9 +25,9 @@ import lombok.ToString;
 public class Quiz {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private long id;
-
+    private Long id;
+    private Long number;
     @OneToMany(targetEntity = QAPair.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn( name="qapair_id", referencedColumnName = "id")
-    private List<QAPair> quizQuestions;
+    private List<QAPair> results;
 }

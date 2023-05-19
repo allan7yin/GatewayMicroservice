@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizGpt.formManagement.Account.Entity.MqResponse;
 import com.quizGpt.formManagement.Account.Repository.MqResponseRepository;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
@@ -20,12 +22,18 @@ public class AuthMqServiceImpl implements AuthMqService {
     // establish RabbitMQ connection and broadcast message to one of the queues 
 
     private RabbitTemplate rabbitTemplate;
-    private final static String AUTH_EXCHANGE = "auth_exchange";
-    private final static String LOGIN_QUEUE = "rabbitmq.auth.login.queue";
-    private final static String SIGN_UP_QUEUE = "rabbitmq.auth.signup.queue";
+
+    @Value("${rabbitmq.auth.exchange}")
+    private String AUTH_EXCHANGE;
+
+    @Value("${rabbitmq.auth.login.queue.routing.key}")
+    private String LOGIN_QUEUE_ROUTING_KEY;
+
+    @Value("${rabbitmq.auth.signup.queue.routing.key}")
+    private String SIGN_UP_QUEUE_ROUTING_KEY;
+
     private ObjectMapper jsonMapper;
     private final MqResponseRepository mqResponseRepository;
-
 
     public AuthMqServiceImpl(RabbitTemplate rabbitTemplate, ObjectMapper jsonMapper, MqResponseRepository mqResponseRepository) {
         this.rabbitTemplate = rabbitTemplate;
@@ -35,16 +43,16 @@ public class AuthMqServiceImpl implements AuthMqService {
 
     @Override
     public <T> String SendLoginRequestDto(T loginRequestMessage) throws JsonProcessingException {
-        return SendMessageToQueue(LOGIN_QUEUE, loginRequestMessage);
+        return SendMessageToQueue(LOGIN_QUEUE_ROUTING_KEY, loginRequestMessage);
     }
 
     @Override
     public <T> String SendSignUpRequestDto(T SignUpRequestMessage) throws JsonProcessingException {
-        return SendMessageToQueue(LOGIN_QUEUE, SignUpRequestMessage);
+        return SendMessageToQueue(SIGN_UP_QUEUE_ROUTING_KEY, SignUpRequestMessage);
     }
 
     @Override
-    @RabbitListener(queues = LOGIN_QUEUE)
+    @RabbitListener(queues = {"${rabbitmq.auth.login.queue}"})
     public void ConsumeLoginMessageFromMQ(Object incomingMessage) {
         try {
             save(incomingMessage); // need to cast this to a Message type 
@@ -54,7 +62,7 @@ public class AuthMqServiceImpl implements AuthMqService {
     }
     
     @Override
-    @RabbitListener(queues = SIGN_UP_QUEUE)
+    @RabbitListener(queues = {"${rabbitmq.auth.signup.queue}"})
     public void ConsumeSignUpMessageFromMQ(Object incomingMessage) {
         try {
             save(incomingMessage);

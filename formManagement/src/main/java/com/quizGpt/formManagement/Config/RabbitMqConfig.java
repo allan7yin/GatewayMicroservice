@@ -35,7 +35,7 @@ public class RabbitMqConfig {
 
     // exchanges 
 
-    @Value("{form.management.rabbitmq.exchange}")
+    @Value("{rabbitmq.gpt.exchange}")
     private String GPT_EXCHANGE;
 
     @Value("${rabbitmq.auth.exchange}")

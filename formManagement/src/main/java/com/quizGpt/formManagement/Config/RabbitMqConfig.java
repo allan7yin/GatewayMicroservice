@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMqConfig {
 
     // Routing Keys 
-    @Value("{gpt.rabbitmq.routing.key}")
+    @Value("${gpt.rabbitmq.routing.key}")
     private String GPT_ROUTING_KEY;
 
     @Value("${rabbitmq.auth.login.queue.routing.key}")

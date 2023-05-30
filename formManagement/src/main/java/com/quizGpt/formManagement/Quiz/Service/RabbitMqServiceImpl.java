@@ -20,7 +20,7 @@ public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
 
     private RabbitTemplate rabbitTemplate;
 
-    @Value("{form.management.rabbitmq.exchange}")
+    @Value("{rabbitmq.gpt.exchange}")
     private String GPT_EXCHANGE;
     
     @Value("{gpt.rabbitmq.routing.key}")

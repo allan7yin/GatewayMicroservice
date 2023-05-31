@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMqConfig {
 
     // Routing Keys 
-    @Value("${gpt.rabbitmq.routing.key}")
+    @Value("{gpt.rabbitmq.routing.key}")
     private String GPT_ROUTING_KEY;
 
     @Value("${rabbitmq.auth.login.queue.routing.key}")
@@ -21,17 +21,28 @@ public class RabbitMqConfig {
 
     @Value("${rabbitmq.auth.signup.queue.routing.key}")
     private String SIGN_UP_QUEUE_ROUTING_KEY;
+
+    @Value("${to.gateway.login.response.queue.routing.key}") // res login routing key
+    private String auth_login_response_queue_routing_key;
+
+    @Value("${to.gateway.sign.up.response.queue.routing.key}") // res sign up routing key
+    private String auth_sign_up_response_queue_routing_key;
     
-    // queues being read from 
+    // queues being published to from 
+    @Value("{to.gpt.rabbitmq.request.queue}")
+    private String GPT_REQUEST_QUEUE;
 
-    @Value("{rabbitmq.gpt.response.queue}")
-    private String GPT_RESPONSE_QUEUE;
+    @Value("${to.auth.rabbitmq.request.queue.login}")
+    private String AUTH_LOGIN_REQUEST_QUEUE;
 
-    @Value("${rabbitmq.auth.login.queue}")
-    private String AUTH_LOGIN_RESPONSE_QUEUE;
+    @Value("${to.auth.rabbitmq.request.queue.sign.up}")
+    private String AUTH_SIGNUP_REQUEST_QUEUE;
 
-    @Value("${rabbitmq.auth.signup.queue}")
-    private String AUTH_SIGNUP_RESPONSE_QUEUE;
+    @Value("${to.gateway.login.response.queue}") //res queue name 
+    private String auth_login_response_queue;
+
+    @Value("${to.gateway.sign.up.response.queue}") // res queue name 
+    private String auth_sign_up_response_queue;
 
     // exchanges 
 
@@ -41,18 +52,28 @@ public class RabbitMqConfig {
     @Value("${rabbitmq.auth.exchange}")
     private String AUTH_EXCHANGE;
 
-    // Queues 
+    // request Queues 
     @Bean
     public Queue GptResponseQueue(){
-        return new Queue(GPT_RESPONSE_QUEUE, false);
+        return new Queue(GPT_REQUEST_QUEUE, false);
     }
     @Bean
     public Queue AuthLoginResponseQueue(){
-        return new Queue(AUTH_LOGIN_RESPONSE_QUEUE, true);
+        return new Queue(AUTH_LOGIN_REQUEST_QUEUE, true);
     }
     @Bean
     public Queue AuthSignupResponseQueue(){
-        return new Queue(AUTH_SIGNUP_RESPONSE_QUEUE, true);
+        return new Queue(AUTH_SIGNUP_REQUEST_QUEUE, true);
+    }
+
+    // response Queues 
+    @Bean
+    public Queue ResAuthLoginResponseQueue(){
+        return new Queue(auth_login_response_queue, true);
+    }
+    @Bean
+    public Queue ResAuthSignupResponseQueue(){
+        return new Queue(auth_sign_up_response_queue, true);
     }
 
     // we are making it so there is one route key per "path", so we set this up as a direct exchange 
@@ -92,14 +113,31 @@ public class RabbitMqConfig {
     }
 
     @Bean
-    public MessageConverter converter(){
+    public MessageConverter jsonMessageConverter(){
         return new Jackson2JsonMessageConverter();
     }
 
     @Bean
+    public Binding ResLoginBinding(){
+        return BindingBuilder
+                .bind(ResAuthLoginResponseQueue())
+                .to(AuthExchange())
+                .with(auth_login_response_queue_routing_key);
+    }
+
+    @Bean
+    public Binding ResSignUpBinding(){
+        return BindingBuilder
+                .bind(ResAuthSignupResponseQueue())
+                .to(AuthExchange())
+                .with(auth_sign_up_response_queue_routing_key);
+    }
+
+
+    @Bean
     public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory){
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        //rabbitTemplate.setMessageConverter(converter());
+        rabbitTemplate.setMessageConverter(jsonMessageConverter());
         return rabbitTemplate;
     }
 }

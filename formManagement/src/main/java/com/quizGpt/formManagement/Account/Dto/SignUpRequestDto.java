@@ -1,5 +1,6 @@
 package com.quizGpt.formManagement.Account.Dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,12 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class SignUpRequestDto {
-    String Username;
-    String Password;
-    String Email;
+    @NotBlank
+    String username;
+
+    @NotBlank
+    String password;
+
+    @NotBlank
+    String email;
 }

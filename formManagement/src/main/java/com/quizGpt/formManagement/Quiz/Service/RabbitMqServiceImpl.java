@@ -20,7 +20,7 @@ public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
 
     private RabbitTemplate rabbitTemplate;
 
-    @Value("{rabbitmq.gpt.exchange}")
+    @Value("{form.management.rabbitmq.exchange}")
     private String GPT_EXCHANGE;
     
     @Value("{gpt.rabbitmq.routing.key}")
@@ -56,7 +56,6 @@ public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
     @RabbitListener(queues = {"{rabbitmq.gpt.response.queue}"})
     public void ConsumeMessageFromGptServer(QuizDto responseMessage) throws JsonProcessingException {
         // we want to save this to the database. Convert to different types to be able to do so. 
-        ObjectMapper jsonToJavaObjectMapper = new ObjectMapper();
         ModelMapper dtoToJavaobjectMapper = new ModelMapper();
 
         // String json = jsonToJavaObjectMapper.writeValueAsString(responseMessage);

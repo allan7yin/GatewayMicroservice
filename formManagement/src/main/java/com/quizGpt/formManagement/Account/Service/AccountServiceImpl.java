@@ -30,7 +30,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     public MqResponse FindFirstMqResponse(String correlationIdOrUsername) throws CorrelationIdNotFound {
-        Optional<MqResponse> response = Optional.ofNullable(mqResponseRepository.findFirstResponse(correlationIdOrUsername));
+        Optional<MqResponse> response = Optional.ofNullable(mqResponseRepository.findFirstByResponseContaining(correlationIdOrUsername));
         
         if (response.isPresent()) {
             return response.get(); // we use the .get() method to obtain the value stored within the optional 

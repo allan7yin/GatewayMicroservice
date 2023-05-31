@@ -20,7 +20,6 @@ import java.util.UUID;
 public class AuthMqServiceImpl implements AuthMqService {
 
     // establish RabbitMQ connection and broadcast message to one of the queues 
-
     private RabbitTemplate rabbitTemplate;
 
     @Value("${rabbitmq.auth.exchange}")
@@ -52,7 +51,7 @@ public class AuthMqServiceImpl implements AuthMqService {
     }
 
     @Override
-    @RabbitListener(queues = {"${rabbitmq.auth.login.queue}"})
+    @RabbitListener(queues = "${to.gateway.login.response.queue}")
     public void ConsumeLoginMessageFromMQ(Object incomingMessage) {
         try {
             save(incomingMessage); // need to cast this to a Message type 
@@ -62,7 +61,7 @@ public class AuthMqServiceImpl implements AuthMqService {
     }
     
     @Override
-    @RabbitListener(queues = {"${rabbitmq.auth.signup.queue}"})
+    @RabbitListener(queues = "${to.gateway.sign.up.response.queue}")
     public void ConsumeSignUpMessageFromMQ(Object incomingMessage) {
         try {
             save(incomingMessage);

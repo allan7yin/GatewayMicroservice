@@ -8,7 +8,7 @@ import com.quizGpt.formManagement.Account.Dto.SignUpRequestDto;
 import com.quizGpt.formManagement.Account.Entity.MqResponse;
 import com.quizGpt.formManagement.Account.Exception.CorrelationIdNotFound;
 import com.quizGpt.formManagement.Account.Service.AccountService;
-import com.quizGpt.formManagement.Account.Service.AuthMqService;
+import com.quizGpt.formManagement.Account.Service.AuthMqServiceImpl;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -22,14 +22,14 @@ import jakarta.validation.constraints.NotNull;
 
 
 @RestController
-@RequestMapping("/someApiurl")
+@RequestMapping("/api")
 public class AccountController {
     private AccountService accountService;
-    private AuthMqService authMqService;
+    private AuthMqServiceImpl authMqService;
     private HttpSession session; // we'll use this to set the session period to around one week 
     private ObjectMapper objectMapper;
 
-    public AccountController(AuthMqService authMqService, AccountService accountService, HttpSession session, ObjectMapper objectMapper ) {
+    public AccountController(AuthMqServiceImpl authMqService, AccountService accountService, HttpSession session, ObjectMapper objectMapper ) {
         this.accountService = accountService;
         this.authMqService = authMqService;
         this.session = session;
@@ -58,12 +58,12 @@ public class AccountController {
 
     @PostMapping("/account/signup")
     public @NotNull ResponseEntity SignUpUser(@RequestBody SignUpRequestDto request) throws JsonProcessingException, TimeoutException, CorrelationIdNotFound, InterruptedException, ExecutionException {
+        SignUpRequestDto loginDto = null;
         authMqService.SendSignUpRequestDto(request); 
 
         Future<String> response = GetResponseOrWait(request.getUsername());
         String trueResponse = response.get();
-
-        SignUpRequestDto loginDto = null;
+        
         if (trueResponse != null) {
 
             loginDto = objectMapper.readValue(trueResponse, SignUpRequestDto.class);

@@ -79,6 +79,7 @@ public class AuthMqServiceImpl implements AuthMqService {
 
         try {
             mqResponseRepository.save( new MqResponse(correlationID, JSON));
+            System.out.println(JSON);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }

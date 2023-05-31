@@ -12,11 +12,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class LoginResponseDto {
-    private String accessToken;
+    private String token;
     private String email;
     private int id;
     private List<String> roles;
-    private String tokenType;
+    private String authScheme;
     private String username;
     private String password;
     private String statusCode;

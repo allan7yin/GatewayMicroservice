@@ -17,7 +17,7 @@ public class AccountServiceImpl implements AccountService{
     private MqResponseRepository mqResponseRepository;
 
     @Override
-    public MqResponse FindMqResponseById(String correlationId) throws CorrelationIdNotFound {
+    public MqResponse FindMqResponseByCorelationId(String correlationId) throws CorrelationIdNotFound {
         // like to use <Optional> when the thing being returned may not be present. Often used when querying database
         Optional<MqResponse> response = mqResponseRepository.findById(correlationId);
 
@@ -35,7 +35,8 @@ public class AccountServiceImpl implements AccountService{
         if (response.isPresent()) {
             return response.get(); // we use the .get() method to obtain the value stored within the optional 
         } else {
-            throw new CorrelationIdNotFound("error: mq with id" + correlationIdOrUsername + " not found");
+            throw new CorrelationIdNotFound(correlationIdOrUsername + " not found. Continuing to look ...");
+            // ok to see in terminal. Means looked and not there, as we are probing the db multiple times wihtin timeout timeframe
         }
     }
 

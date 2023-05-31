@@ -1,6 +1,8 @@
 package com.quizGpt.formManagement.Account.Service;
 
 import org.springframework.amqp.core.MessageProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -33,6 +35,8 @@ public class AuthMqServiceImpl implements AuthMqService {
 
     private ObjectMapper jsonMapper;
     private final MqResponseRepository mqResponseRepository;
+
+    private final Logger logger = LoggerFactory.getLogger(AuthMqServiceImpl.class);
 
     public AuthMqServiceImpl(RabbitTemplate rabbitTemplate, ObjectMapper jsonMapper, MqResponseRepository mqResponseRepository) {
         this.rabbitTemplate = rabbitTemplate;
@@ -76,10 +80,10 @@ public class AuthMqServiceImpl implements AuthMqService {
         String correlationID = message.getMessageProperties().getCorrelationId();
         
         String JSON = new String(message.getBody(), "UTF-8");
+        logger.info(JSON);
 
         try {
             mqResponseRepository.save( new MqResponse(correlationID, JSON));
-            System.out.println(JSON);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -103,6 +107,10 @@ public class AuthMqServiceImpl implements AuthMqService {
         
         rabbitTemplate.convertAndSend(AUTH_EXCHANGE, routingKey, deliverable);
         return correlationId;
+    }
+
+    public boolean isEntryExistsByCorrelationId(String correlationId) {
+        return mqResponseRepository.existsById(correlationId);
     }
 
 }

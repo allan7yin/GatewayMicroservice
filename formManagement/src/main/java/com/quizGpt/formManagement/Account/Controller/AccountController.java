@@ -15,6 +15,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
@@ -29,6 +33,8 @@ public class AccountController {
     private HttpSession session; // we'll use this to set the session period to around one week 
     private ObjectMapper objectMapper;
 
+    private final Logger logger = LoggerFactory.getLogger(AccountController.class);
+
     public AccountController(AuthMqServiceImpl authMqService, AccountService accountService, HttpSession session, ObjectMapper objectMapper ) {
         this.accountService = accountService;
         this.authMqService = authMqService;
@@ -38,22 +44,30 @@ public class AccountController {
 
     // Spring takes care of mapping the JSON (or other standard data formats) into Java object (however, needs to be a valid one, otherwise, error)
     @PostMapping("/account/login")
-    public @NotNull ResponseEntity LoginUser(@RequestBody LoginRequestDto request) throws JsonProcessingException, CorrelationIdNotFound, InterruptedException, ExecutionException, TimeoutException {
-        // calls another microservices API that is responsible for user authentication 
-        authMqService.SendLoginRequestDto(request); // this will result in the message's response being saved in db, wait and obtain it
-
-        Future<String> response = GetResponseOrWait(request.getUsername());
+    public @NotNull ResponseEntity LoginUser(@RequestBody LoginRequestDto request) throws JsonProcessingException, CorrelationIdNotFound, 
+    InterruptedException, ExecutionException, TimeoutException {
+        String correlationID = authMqService.SendLoginRequestDto(request); // this will result in the message's response being saved in db, wait and obtain it
+        
+        Future<String> response = GetResponseOrWait(correlationID);
         String trueResponse = response.get();
+        
 
         LoginResponseDto loginDto = null;
         if (trueResponse != null) {
+
+            logger.info(trueResponse);
 
             loginDto = objectMapper.readValue(trueResponse, LoginResponseDto.class);
 
             session.setAttribute("username", loginDto.getUsername());
             session.setAttribute("roles", loginDto.getRoles());
         }
-        return ResponseEntity.ok(loginDto);
+        
+        if (loginDto.getStatusCodeValue() == 200) {
+            return ResponseEntity.ok(loginDto);
+        } else {// if (loginDto.getStatusCodeValue() == 400) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(loginDto);
+        }
     }
 
     @PostMapping("/account/signup")
@@ -76,37 +90,67 @@ public class AccountController {
         session.invalidate();
     }
 
-    private Future<String> GetResponseOrWait(String correlationIdOrUsername) throws TimeoutException, CorrelationIdNotFound {
-        long threadSleepTime = 1000;
-        int maxTimeAlloted = 10;
-        int waitTime = 0;
+    // private CompletableFuture<String> GetResponseOrWait(String correlationIdOrUsername) throws TimeoutException, CorrelationIdNotFound {
+        // long threadSleepTime = 1000;
+        // int maxTimeAlloted = 10;
+        // int waitTime = 0;
+        // CompletableFuture<String> futureResponse = new CompletableFuture<>();
+
+        // while (waitTime < maxTimeAlloted) {
+
+        //     MqResponse response;
+        //     // check if we were passed an ID (numeric) or a username (word)
+        //     try {
+        //         Double.parseDouble(correlationIdOrUsername);
+        //         response = accountService.FindMqResponseByCorelationId(correlationIdOrUsername);
+        //     } catch (NumberFormatException e) {
+        //         response = accountService.FindFirstMqResponse(correlationIdOrUsername);
+        //     }
+
+        //     if(response != null) {
+        //         futureResponse.complete(response.getResponse().replace("response=", ""));
+        //         accountService.MqDelete(response);
+        //         return futureResponse;
+        //     } else {
+        //         try {
+        //             Thread.sleep(threadSleepTime);
+        //         } catch (InterruptedException e) {
+        //             e.printStackTrace();
+        //         }
+
+        //         waitTime++;
+        //     }
+        // }
+        // throw  new TimeoutException("Timeout: Took too long to fetch " + correlationIdOrUsername);
+    //}
+
+    private CompletableFuture<String> GetResponseOrWait(String correlationId) throws TimeoutException, CorrelationIdNotFound, InterruptedException {
+        long startTime = System.currentTimeMillis();
+        long timeout = 5000; // Timeout in milliseconds
+
         CompletableFuture<String> futureResponse = new CompletableFuture<>();
+        MqResponse response = null;
 
-        while (waitTime < maxTimeAlloted) {
+        while (System.currentTimeMillis() - startTime < timeout) {
+            // Check if entry is present in the database table
+            boolean entryExists = checkEntryInTable(correlationId);
 
-            MqResponse response;
-            // check if we were passed an ID (numeric) or a username (word)
-            try {
-                Double.parseDouble(correlationIdOrUsername);
-                response = accountService.FindMqResponseById(correlationIdOrUsername);
-            } catch (NumberFormatException e) {
-                response = accountService.FindFirstMqResponse(correlationIdOrUsername);
-            }
-
-            if(response != null) {
+            if (entryExists) {
+                response = accountService.FindMqResponseByCorelationId(correlationId);
+                logger.info(response.getResponse());
                 futureResponse.complete(response.getResponse().replace("response=", ""));
                 accountService.MqDelete(response);
                 return futureResponse;
-            } else {
-                try {
-                    Thread.sleep(threadSleepTime);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                waitTime++;
             }
+
+            // Wait for 100 milliseconds before checking again
+            Thread.sleep(100);
         }
-        throw  new TimeoutException("Timeout: Took too long to fetch " + correlationIdOrUsername);
+
+        throw  new TimeoutException("Timeout: Took too long to fetch (> 5seconds) " + correlationId);
+    }
+
+    private boolean checkEntryInTable(String correlationId) {
+        return authMqService.isEntryExistsByCorrelationId(correlationId);
     }
 }

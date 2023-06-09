@@ -26,8 +26,9 @@ public class Quiz {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long number;
-    @OneToMany(targetEntity = QAPair.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = Question.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn( name="qapair_id", referencedColumnName = "id")
-    private List<QAPair> results;
+    private List<Question> results;
 }

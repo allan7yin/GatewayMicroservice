@@ -22,7 +22,7 @@ public class AccountServiceImpl implements AccountService{
         Optional<MqResponse> response = mqResponseRepository.findById(correlationId);
 
         if (response.isPresent()) {
-            return response.get(); // we use the .get() method to obtain the value stored within the optional 
+            return response.get(); // we use the .get(  ) method to obtain the value stored within the optional 
         } else {
             throw new CorrelationIdNotFound("error: mq with id" + correlationId + " not found");
         }

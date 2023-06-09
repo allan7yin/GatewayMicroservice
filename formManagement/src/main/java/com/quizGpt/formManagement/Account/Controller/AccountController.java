@@ -18,7 +18,6 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
@@ -89,40 +88,6 @@ public class AccountController {
     public void Logout() {
         session.invalidate();
     }
-
-    // private CompletableFuture<String> GetResponseOrWait(String correlationIdOrUsername) throws TimeoutException, CorrelationIdNotFound {
-        // long threadSleepTime = 1000;
-        // int maxTimeAlloted = 10;
-        // int waitTime = 0;
-        // CompletableFuture<String> futureResponse = new CompletableFuture<>();
-
-        // while (waitTime < maxTimeAlloted) {
-
-        //     MqResponse response;
-        //     // check if we were passed an ID (numeric) or a username (word)
-        //     try {
-        //         Double.parseDouble(correlationIdOrUsername);
-        //         response = accountService.FindMqResponseByCorelationId(correlationIdOrUsername);
-        //     } catch (NumberFormatException e) {
-        //         response = accountService.FindFirstMqResponse(correlationIdOrUsername);
-        //     }
-
-        //     if(response != null) {
-        //         futureResponse.complete(response.getResponse().replace("response=", ""));
-        //         accountService.MqDelete(response);
-        //         return futureResponse;
-        //     } else {
-        //         try {
-        //             Thread.sleep(threadSleepTime);
-        //         } catch (InterruptedException e) {
-        //             e.printStackTrace();
-        //         }
-
-        //         waitTime++;
-        //     }
-        // }
-        // throw  new TimeoutException("Timeout: Took too long to fetch " + correlationIdOrUsername);
-    //}
 
     private CompletableFuture<String> GetResponseOrWait(String correlationId) throws TimeoutException, CorrelationIdNotFound, InterruptedException {
         long startTime = System.currentTimeMillis();

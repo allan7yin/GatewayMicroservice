@@ -1,7 +1,5 @@
 package com.quizGpt.formManagement.Quiz.Dto;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotBlank;
@@ -10,23 +8,30 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-// AKA gptResponseDto
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class QuizDto {
+public class CreateQuizRequestDto {
     @NotBlank
     @JsonProperty("id")
     private Long id;
 
     @NotBlank
-    @JsonProperty("number")
-    private Long number;
+    @JsonProperty("topic")
+    private String topic;
 
     @NotBlank
-    @JsonProperty("questions")
-    private List<QuestionDto> Questions;
+    @JsonProperty("numberOfQuestions")
+    private Long numberOfQuestions;
+
+    @NotBlank
+    @JsonProperty("numberOfOptionsPerQuestion")
+    private Long numberOfOptionsPerQuestion;
+
+    @NotBlank
+    @JsonProperty("difficulty")
+    private String difficulty;
+    
 }
-
-

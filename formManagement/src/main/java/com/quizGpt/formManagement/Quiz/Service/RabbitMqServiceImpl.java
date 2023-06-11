@@ -6,6 +6,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.modelmapper.ModelMapper;
+
+import com.quizGpt.formManagement.Quiz.Dto.CreateQuizRequestDto;
 import com.quizGpt.formManagement.Quiz.Dto.GptRequestDto;
 import com.quizGpt.formManagement.Quiz.Dto.QuizDto;
 import com.quizGpt.formManagement.Quiz.Entity.Quiz;
@@ -19,38 +21,30 @@ public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
 
     private RabbitTemplate rabbitTemplate;
 
-    @Value("{form.management.rabbitmq.exchange}")
+    @Value("{rabbitmq.gpt.exchange}")
     private String GPT_EXCHANGE;
     
-    @Value("{gpt.rabbitmq.routing.key}")
-    private String GPT_ROUTING_KEY;
+    @Value("{gpt.request.rabbitmq.routing.key}")
+    private String GPT_REQUEST_ROUTING_KEY;
 
-    @Value("{auth.login.rabbitmq.routing.key}")
-    private String AUTH_LOGIN_ROUTING_KEY;
+    // @Value("{form.management.rabbitmq.sender}")
+    // private String SENDER;
 
-    @Value("{form.management.rabbitmq.sender}")
-    private String SENDER;
-
-    public RabbitMqServiceImpl(String GPT_EXCHANGE, String GPT_ROUTING_KEY, String AUTH_ROUTING_KEY, String SENDER, QuizRepository quizRepository, RabbitTemplate rabbitTemplate) {
+    public RabbitMqServiceImpl(String GPT_EXCHANGE, String GPT_ROUTING_KEY, String AUTH_ROUTING_KEY, QuizRepository quizRepository, RabbitTemplate rabbitTemplate) {
         this.GPT_EXCHANGE = GPT_EXCHANGE;
-        this.GPT_ROUTING_KEY = GPT_ROUTING_KEY;
-        this.AUTH_LOGIN_ROUTING_KEY = AUTH_ROUTING_KEY;
-        this.SENDER = SENDER;
+        this.GPT_REQUEST_ROUTING_KEY = GPT_ROUTING_KEY;
+        this.GPT_EXCHANGE = AUTH_ROUTING_KEY;
+        // this.SENDER = SENDER;
         this.quizRepository = quizRepository;
         this.rabbitTemplate = rabbitTemplate;
     }
     
     @Override
-    public void SendMessageToAuthServer(String message) {
-        rabbitTemplate.convertAndSend(GPT_EXCHANGE, GPT_ROUTING_KEY, message);
+    public void SendMessageToGptServer(CreateQuizRequestDto message) {
+        rabbitTemplate.convertAndSend(GPT_EXCHANGE, GPT_REQUEST_ROUTING_KEY, message);
     }
 
-    @Override
-    public void SendMessageToGptServer(GptRequestDto message) {
-        message.setSender(SENDER);
-        rabbitTemplate.convertAndSend(GPT_EXCHANGE, AUTH_LOGIN_ROUTING_KEY, message);
-    }
-
+    //// NEED TO FIX THIS
     @Override
     @RabbitListener(queues = {"{rabbitmq.gpt.response.queue}"})
     public void ConsumeMessageFromGptServer(QuizDto responseMessage) throws JsonProcessingException {
@@ -63,5 +57,4 @@ public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
         // json = jsonToJavaObjectMapper.writeValueAsString(quiz);
         quizRepository.save(quiz);
     }
-
 }

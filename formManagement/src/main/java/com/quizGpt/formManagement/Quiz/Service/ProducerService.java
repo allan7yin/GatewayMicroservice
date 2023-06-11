@@ -1,10 +1,8 @@
 package com.quizGpt.formManagement.Quiz.Service;
 
-import com.quizGpt.formManagement.Quiz.Dto.GptRequestDto;
+import com.quizGpt.formManagement.Quiz.Dto.CreateQuizRequestDto;
 
 public interface ProducerService {
-    void SendMessageToAuthServer(String message);
-
-    void SendMessageToGptServer(GptRequestDto message);
+    void SendMessageToGptServer(CreateQuizRequestDto message);
     
 }

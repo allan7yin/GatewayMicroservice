@@ -13,8 +13,11 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMqConfig {
 
     // Routing Keys 
-    @Value("{gpt.rabbitmq.routing.key}")
-    private String GPT_ROUTING_KEY;
+    @Value("{gpt.request.rabbitmq.routing.key}")
+    private String GPT_REQUEST_ROUTING_KEY;
+
+    @Value("{gpt.response.rabbitmq.routing.key}")
+    private String GPT_RESPONSE_ROUTING_KEY;
 
     @Value("${rabbitmq.auth.login.queue.routing.key}")
     private String LOGIN_QUEUE_ROUTING_KEY;
@@ -31,6 +34,9 @@ public class RabbitMqConfig {
     // queues being published to from 
     @Value("{to.gpt.rabbitmq.request.queue}")
     private String GPT_REQUEST_QUEUE;
+
+    @Value("{to.gateway.gpt.rabbitmq.response.queue}")
+    private String GPT_RESPONSE_QUEUE;
 
     @Value("${to.auth.rabbitmq.request.queue.login}")
     private String AUTH_LOGIN_REQUEST_QUEUE;
@@ -54,9 +60,10 @@ public class RabbitMqConfig {
 
     // request Queues 
     @Bean
-    public Queue GptResponseQueue(){
+    public Queue GptRequestQueue(){
         return new Queue(GPT_REQUEST_QUEUE, false);
     }
+
     @Bean
     public Queue AuthLoginResponseQueue(){
         return new Queue(AUTH_LOGIN_REQUEST_QUEUE, true);
@@ -67,6 +74,11 @@ public class RabbitMqConfig {
     }
 
     // response Queues 
+    @Bean
+    public Queue GptResponseQueue(){
+        return new Queue(GPT_RESPONSE_QUEUE, false);
+    }
+
     @Bean
     public Queue ResAuthLoginResponseQueue(){
         return new Queue(auth_login_response_queue, true);
@@ -89,11 +101,11 @@ public class RabbitMqConfig {
     // bind the queues to the exchanges 
 
     @Bean
-    public Binding GptBinding(){
+    public Binding GptRequestBinding(){
         return BindingBuilder
                 .bind(GptExchange())
                 .to(GptExchange())
-                .with(GPT_ROUTING_KEY);
+                .with(GPT_REQUEST_ROUTING_KEY);
     }
 
     @Bean
@@ -131,6 +143,14 @@ public class RabbitMqConfig {
                 .bind(ResAuthSignupResponseQueue())
                 .to(AuthExchange())
                 .with(auth_sign_up_response_queue_routing_key);
+    }
+
+    @Bean
+    public Binding GptResponseBinding(){
+        return BindingBuilder
+                .bind(GptExchange())
+                .to(GptExchange())
+                .with(GPT_RESPONSE_ROUTING_KEY);
     }
 
 

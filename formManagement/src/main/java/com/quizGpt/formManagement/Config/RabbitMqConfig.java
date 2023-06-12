@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMqConfig {
 
     // Routing Keys 
-    @Value("{gpt.request.rabbitmq.routing.key}")
+    @Value("${gpt.request.rabbitmq.routing.key}")
     private String GPT_REQUEST_ROUTING_KEY;
 
-    @Value("{gpt.response.rabbitmq.routing.key}")
+    @Value("${gpt.response.rabbitmq.routing.key}")
     private String GPT_RESPONSE_ROUTING_KEY;
 
     @Value("${rabbitmq.auth.login.queue.routing.key}")
@@ -32,10 +32,10 @@ public class RabbitMqConfig {
     private String auth_sign_up_response_queue_routing_key;
     
     // queues being published to from 
-    @Value("{to.gpt.rabbitmq.request.queue}")
+    @Value("${to.gpt.rabbitmq.request.queue}")
     private String GPT_REQUEST_QUEUE;
 
-    @Value("{to.gateway.gpt.rabbitmq.response.queue}")
+    @Value("${to.gateway.gpt.rabbitmq.response.queue}")
     private String GPT_RESPONSE_QUEUE;
 
     @Value("${to.auth.rabbitmq.request.queue.login}")
@@ -52,7 +52,7 @@ public class RabbitMqConfig {
 
     // exchanges 
 
-    @Value("{rabbitmq.gpt.exchange}")
+    @Value("${rabbitmq.gpt.exchange}")
     private String GPT_EXCHANGE;
 
     @Value("${rabbitmq.auth.exchange}")
@@ -103,7 +103,7 @@ public class RabbitMqConfig {
     @Bean
     public Binding GptRequestBinding(){
         return BindingBuilder
-                .bind(GptExchange())
+                .bind(GptRequestQueue())
                 .to(GptExchange())
                 .with(GPT_REQUEST_ROUTING_KEY);
     }
@@ -148,7 +148,7 @@ public class RabbitMqConfig {
     @Bean
     public Binding GptResponseBinding(){
         return BindingBuilder
-                .bind(GptExchange())
+                .bind(GptResponseQueue())
                 .to(GptExchange())
                 .with(GPT_RESPONSE_ROUTING_KEY);
     }

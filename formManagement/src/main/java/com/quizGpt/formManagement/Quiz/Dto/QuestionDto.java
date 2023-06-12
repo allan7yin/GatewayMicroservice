@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class QuestionDto {
-    private Long questionId;
+    // private Long questionId;
     private String text;
 
     private List<OptionDto> options;

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jvnet.hk2.annotations.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 
 import com.quizGpt.formManagement.Quiz.Entity.Quiz;
 import com.quizGpt.formManagement.Quiz.Entity.QuizAttempt;
@@ -15,12 +17,13 @@ import com.quizGpt.formManagement.Quiz.Repository.QuizRepository;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Service
 public class QuizServiceImpl implements QuizService {
 
+    @Autowired
     private QuizRepository quizRepository;
+
+    @Autowired
     private QuizAttemptRepository quizAttemptRepository;
 
     // for quizzes 

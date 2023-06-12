@@ -5,26 +5,40 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.springframework.stereotype.Service;
 import org.modelmapper.ModelMapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.quizGpt.formManagement.Quiz.Dto.CreateQuizRequestDto;
-import com.quizGpt.formManagement.Quiz.Dto.GptRequestDto;
 import com.quizGpt.formManagement.Quiz.Dto.QuizDto;
 import com.quizGpt.formManagement.Quiz.Entity.Quiz;
 import com.quizGpt.formManagement.Quiz.Repository.QuizRepository;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+@Service
+@AllArgsConstructor
+@NoArgsConstructor
 public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
 
+    private final Logger logger = LoggerFactory.getLogger(RabbitMqServiceImpl.class);
+
+    @Autowired
     QuizRepository quizRepository;
 
+    @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Value("{rabbitmq.gpt.exchange}")
+    @Value("${rabbitmq.gpt.exchange}")
     private String GPT_EXCHANGE;
     
-    @Value("{gpt.request.rabbitmq.routing.key}")
+    @Value("${gpt.request.rabbitmq.routing.key}")
     private String GPT_REQUEST_ROUTING_KEY;
 
     // @Value("{form.management.rabbitmq.sender}")
@@ -46,7 +60,7 @@ public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
 
     //// NEED TO FIX THIS
     @Override
-    @RabbitListener(queues = {"{rabbitmq.gpt.response.queue}"})
+    @RabbitListener(queues = {"${to.gateway.gpt.rabbitmq.response.queue}"})
     public void ConsumeMessageFromGptServer(QuizDto responseMessage) throws JsonProcessingException {
         // we want to save this to the database. Convert to different types to be able to do so. 
         ModelMapper dtoToJavaobjectMapper = new ModelMapper();
@@ -55,6 +69,7 @@ public class RabbitMqServiceImpl implements ProducerService, ConsumerService{
         Quiz quiz = dtoToJavaobjectMapper.map(responseMessage, Quiz.class);
         // Long quizId = quiz.getId();
         // json = jsonToJavaObjectMapper.writeValueAsString(quiz);
-        quizRepository.save(quiz);
+        logger.info(quiz.toString());
+        // quizRepository.save(quiz);
     }
 }

@@ -20,9 +20,8 @@ public class Question {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long questionId;
+    
     private String text;
-    private boolean isRequired;
-    private int ordering;
 
     @OneToMany(targetEntity = Option.class, cascade = CascadeType.ALL)
     @JoinColumn( name="questionId_fk", referencedColumnName = "questionId")

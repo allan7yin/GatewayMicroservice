@@ -10,7 +10,5 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class OptionDto {
-    private Long optionId;
-    private Long questionId;
     private String text;
 }

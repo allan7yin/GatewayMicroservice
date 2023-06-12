@@ -20,7 +20,6 @@ public class QuizDto {
     @JsonProperty("id")
     private Long id;
 
-    @NotBlank
     @JsonProperty("number")
     private Long number;
 
